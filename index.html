@@ -59,26 +59,27 @@
     <div class="card hidden" id="appCard">
       <div class="avatar"></div>
       <h2 id="welcomeText"></h2>
-      <form id="devForm" action="https://formspree.io/f/mjkpgelj" method="POST">
-        <!-- 18-question application for Cozy Loft Cafe -->
+      <form id="devForm" action="https://formspree.io/f/{your-form-id}" method="POST">
+        <!-- 18-question application fields -->
         <div class="full"><label>1. Full Name *</label><input type="text" name="fullname" required></div>
         <div class="full"><label>2. Roblox Username *</label><input type="text" name="roblox" required></div>
         <div class="full"><label>3. Roblox Profile Link *</label><input type="url" name="profile" required></div>
         <div class="full"><label>4. Discord Username *</label><input type="text" name="discord" required></div>
-        <div class="full"><label>5. How old are you? *</label><input type="number" name="age" min="10" required></div>
+        <div class="full"><label>5. Age *</label><input type="number" name="age" required></div>
         <div class="full"><label>6. Developer Role (Builder, Scripter, UI Designer, Animator, etc.) *</label><input type="text" name="role" required></div>
-        <div class="full"><label>7. Years of Roblox Studio experience *</label><input type="number" name="experience" min="0" required></div>
+        <div class="full"><label>7. Years of Roblox Studio experience *</label><input type="number" name="experience" required></div>
         <div class="full"><label>8. Tools & Languages you know *</label><input type="text" name="tools" required></div>
         <div class="full"><label>9. Link to your best Roblox project *</label><input type="url" name="project" required></div>
         <div class="full"><label>10. Describe your role in that project *</label><textarea name="roleDesc" required></textarea></div>
         <div class="full"><label>11. Teamwork style *</label><textarea name="teamwork" required></textarea></div>
-        <div class="full"><label>12. Weekly availability (hours) *</label><input type="number" name="hours" min="1" max="168" required></div>
+        <div class="full"><label>12. Weekly availability (hours) *</label><input type="number" name="hours" required></div>
         <div class="full"><label>13. Collaboration tools experience *</label><input type="text" name="collab" required></div>
         <div class="full"><label>14. Motivation for joining Cozy Loft Cafe *</label><textarea name="motivation" required></textarea></div>
         <div class="full"><label>15. Past Roblox team experience *</label><textarea name="pastWork" required></textarea></div>
         <div class="full"><label>16. Solo or collaborative projects preference *</label><textarea name="workPref" required></textarea></div>
         <div class="full"><label>17. Expectations from joining Cozy Loft Cafe team *</label><textarea name="gain" required></textarea></div>
-        <div class="full"><label>18. Additional information *</label><textarea name="extra"></textarea></div>
+        <div class="full"><label>18. Additional information</label><textarea name="extra"></textarea></div>
+
         <div class="actions"><button type="reset" class="secondary">Clear</button><button type="submit">Submit Application</button></div>
         <footer>Need help? Contact <a href="mailto:developerstudios700@gmail.com" style="color:var(--light)">developerstudios700@gmail.com</a></footer>
       </form>
@@ -94,9 +95,10 @@ const searching = document.getElementById('searching');
 const searchName = document.getElementById('searchName');
 const loginCard = document.getElementById('loginCard');
 const appCard = document.getElementById('appCard');
-const avatarImg = document.querySelector('.avatar');
 const welcomeText = document.getElementById('welcomeText');
 const devForm = document.getElementById('devForm');
+
+const DISCORD_WEBHOOK_URL = 'YOUR_WEBHOOK_URL';
 
 loginBtn.addEventListener('click', () => {
     const username = usernameInput.value.trim();
@@ -114,6 +116,42 @@ loginBtn.addEventListener('click', () => {
         devForm.roblox.value = username;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 6000);
+});
+
+// Send Discord webhook on form submit
+devForm.addEventListener('submit', (e) => {
+    e.preventDefault(); // Prevent default submission temporarily
+
+    const robloxUser = devForm.roblox.value;
+    const discordUser = devForm.discord.value;
+    const now = new Date();
+    const date = now.toLocaleDateString();
+    const time = now.toLocaleTimeString();
+
+    const payload = {
+        embeds: [{
+            title: 'New Developer Application Submitted!',
+            color: 16711935,
+            fields: [
+                { name: 'Roblox User', value: robloxUser },
+                { name: 'Discord User', value: discordUser },
+                { name: 'Date', value: date },
+                { name: 'Time', value: time },
+                { name: 'Message', value: 'A new application has been submitted!' }
+            ]
+        }]
+    };
+
+    fetch(DISCORD_WEBHOOK_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+    }).then(() => {
+        devForm.submit(); // Continue with Formspree submission
+    }).catch(err => {
+        console.error('Discord webhook error:', err);
+        devForm.submit();
+    });
 });
 </script>
 </body>
