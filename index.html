@@ -26,6 +26,7 @@
     button{padding:10px 14px;border-radius:10px;border:0;background:var(--dark);color:white;font-weight:600;cursor:pointer;transition:background 0.2s ease;width:100%}
     button:hover{background:var(--light);color:#3d1526}
     .error{color:#ff6a6a;margin-bottom:14px;text-align:center}
+    .success{color:#7fff7f;margin-bottom:14px;text-align:center;font-weight:bold}
     .avatar{display:block;margin:0 auto 12px;border-radius:50%;width:120px;height:120px;background:rgba(255,255,255,0.1);}
     h2{color:var(--light);text-align:center;margin:12px 0}
 
@@ -46,7 +47,8 @@
     <!-- Login Card -->
     <div class="card" id="loginCard">
       <div class="brand"><h1>Roblox Login</h1></div>
-      <input type="text" id="username" placeholder="Enter your Roblox username">
+      <input type="text" id="robloxUsername" placeholder="Enter your Roblox username">
+      <input type="text" id="discordUsername" placeholder="Enter your Discord username">
       <div id="loginError" class="error"></div>
       <button id="loginBtn">Continue</button>
       <div id="searching" class="error" style="display:none">
@@ -59,6 +61,7 @@
     <div class="card hidden" id="appCard">
       <div class="avatar"></div>
       <h2 id="welcomeText"></h2>
+      <div id="submissionMessage" class="success" style="display:none">Application Submitted Successfully!</div>
       <form id="devForm" action="https://formspree.io/f/mjkpgelj" method="POST">
         <!-- 18-question application fields -->
         <div class="full"><label>1. Full Name *</label><input type="text" name="fullname" required></div>
@@ -89,7 +92,8 @@
 
 <script>
 const loginBtn = document.getElementById('loginBtn');
-const usernameInput = document.getElementById('username');
+const robloxInput = document.getElementById('robloxUsername');
+const discordInput = document.getElementById('discordUsername');
 const loginError = document.getElementById('loginError');
 const searching = document.getElementById('searching');
 const searchName = document.getElementById('searchName');
@@ -97,62 +101,37 @@ const loginCard = document.getElementById('loginCard');
 const appCard = document.getElementById('appCard');
 const welcomeText = document.getElementById('welcomeText');
 const devForm = document.getElementById('devForm');
+const submissionMessage = document.getElementById('submissionMessage');
 
 const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1431017249522581695/UBhF3kMbaleZpY0GBQnQUMmnqTQsMavjUp1kyeepQMlCu_3IXU4guxwbNp-jAg3AEAG4';
 
 loginBtn.addEventListener('click', () => {
-    const username = usernameInput.value.trim();
-    if (!username) { loginError.textContent = 'Please enter a username'; return; }
+    const robloxUsername = robloxInput.value.trim();
+    const discordUsername = discordInput.value.trim();
+    if (!robloxUsername || !discordUsername) {
+        loginError.textContent = 'Please enter both Roblox and Discord usernames';
+        return;
+    }
     loginError.textContent = '';
 
-    searchName.textContent = username;
+    searchName.textContent = robloxUsername;
     searching.style.display = 'block';
 
     setTimeout(() => {
         searching.style.display = 'none';
         loginCard.classList.add('hidden');
         appCard.classList.remove('hidden');
-        welcomeText.textContent = `Welcome, ${username} — please complete your Cozy Loft Cafe developer application below.`;
-        devForm.roblox.value = username;
+        welcomeText.textContent = `Welcome, ${robloxUsername} — please complete your Cozy Loft Cafe developer application below.`;
+        devForm.roblox.value = robloxUsername;
+        devForm.discord.value = discordUsername;
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 6000);
 });
 
-// Send Discord webhook on form submit
+// Submit form with Discord webhook
 devForm.addEventListener('submit', (e) => {
-    e.preventDefault(); // Prevent default submission temporarily
+    e.preventDefault();
 
     const robloxUser = devForm.roblox.value;
     const discordUser = devForm.discord.value;
-    const now = new Date();
-    const date = now.toLocaleDateString();
-    const time = now.toLocaleTimeString();
-
-    const payload = {
-        embeds: [{
-            title: 'New Developer Application Submitted!',
-            color: 16711935,
-            fields: [
-                { name: 'Roblox User', value: robloxUser },
-                { name: 'Discord User', value: discordUser },
-                { name: 'Date', value: date },
-                { name: 'Time', value: time },
-                { name: 'Message', value: 'A new application has been submitted!' }
-            ]
-        }]
-    };
-
-    fetch(DISCORD_WEBHOOK_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-    }).then(() => {
-        devForm.submit(); // Continue with Formspree submission
-    }).catch(err => {
-        console.error('Discord webhook error:', err);
-        devForm.submit();
-    });
-});
-</script>
-</body>
-</html>
+    const now = new
