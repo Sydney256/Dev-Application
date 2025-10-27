@@ -22,14 +22,13 @@
     .brand{padding:28px 24px;border-radius:14px;margin-bottom:22px;background:linear-gradient(90deg,var(--dark),var(--light));background-size:200% 200%;animation:grad 6s ease infinite;box-shadow:0 6px 30px rgba(255,0,127,0.15),inset 0 -6px 30px rgba(255,255,255,0.02);color:#3d1526;text-align:center;}
     @keyframes grad{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
 
-    input{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:var(--card);color:#ffeef5;outline:none;margin-bottom:14px}
+    input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:var(--card);color:#ffeef5;outline:none;margin-bottom:14px}
     button{padding:10px 14px;border-radius:10px;border:0;background:var(--dark);color:white;font-weight:600;cursor:pointer;transition:background 0.2s ease;width:100%}
     button:hover{background:var(--light);color:#3d1526}
     .error{color:#ff6a6a;margin-bottom:14px;text-align:center}
     .avatar{display:block;margin:0 auto 12px;border-radius:50%;width:120px;height:120px;background:rgba(255,255,255,0.1);}
     h2{color:var(--light);text-align:center;margin:12px 0}
 
-    /* Spinner */
     .spinner{border:4px solid rgba(255,255,255,0.1);border-top:4px solid var(--light);border-radius:50%;width:32px;height:32px;margin:12px auto;animation:spin 1s linear infinite}
     @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
@@ -60,7 +59,7 @@
     <div class="card hidden" id="appCard">
       <div class="avatar"></div>
       <h2 id="welcomeText"></h2>
-      <form id="devForm">
+      <form id="devForm" action="https://formspree.io/f/{your-form-id}" method="POST">
         <!-- 18-question form fields -->
         <div class="full"><label>1. Full Name *</label><input type="text" name="fullname" required></div>
         <div class="full"><label>2. Roblox Username *</label><input type="text" name="roblox" required></div>
@@ -81,7 +80,7 @@
         <div class="full"><label>17. Expectations from joining the team *</label><textarea name="gain" required></textarea></div>
         <div class="full"><label>18. Additional info</label><textarea name="extra"></textarea></div>
         <div class="actions"><button type="reset" class="secondary">Clear</button><button type="submit">Submit Application</button></div>
-        <footer>Need help? Contact <span style="color:var(--light)">devs@example.com</span></footer>
+        <footer>Need help? Contact <a href="mailto:developerstudios700@gmail.com" style="color:var(--light)">developerstudios700@gmail.com</a></footer>
       </form>
     </div>
 
@@ -101,31 +100,3 @@ const devForm=document.getElementById('devForm');
 
 loginBtn.addEventListener('click',()=>{
     const username=usernameInput.value.trim();
-    if(!username){loginError.textContent='Please enter a username'; return;}
-    loginError.textContent='';
-    searchName.textContent=username;
-    searching.style.display='block';
-
-    // Simulate searching (no API call to avoid CORS issues)
-    setTimeout(()=>{
-        searching.style.display='none';
-        loginCard.classList.add('hidden');
-        appCard.classList.remove('hidden');
-        avatarImg.style.backgroundImage=`url('https://www.roblox.com/headshot-thumbnail/image?userId=1&width=420&height=420&format=png')`;
-        avatarImg.style.backgroundSize='cover';
-        avatarImg.style.backgroundPosition='center';
-        welcomeText.textContent=`Welcome, ${username} — please complete your application below.`;
-        devForm.roblox.value=username;
-        window.scrollTo({top:0,behavior:'smooth'});
-    },1500);
-});
-
-devForm.addEventListener('submit',e=>{
-    e.preventDefault();
-    const data=Object.fromEntries(new FormData(devForm));
-    alert('Application submitted! Data copied to clipboard.');
-    navigator.clipboard.writeText(JSON.stringify(data,null,2));
-});
-</script>
-</body>
-</html>
