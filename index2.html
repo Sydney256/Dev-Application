@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Cozy Loft Cafe Developer Application</title>
+  <style>
+    :root{
+      --dark:#ff007f;
+      --light:#ffb6c1;
+      --bg:#1a0a12;
+      --card:#1f1118;
+      --muted:#e0b7c4;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;color:#ffeef5;background:linear-gradient(180deg,#2b0f1b 0%,#3d1526 50%,#1a0a12 100%);display:flex;justify-content:center;align-items:flex-start;padding-top:40px;}
+    .container{width:95%;max-width:980px;margin-bottom:40px;}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,0.04),transparent);border-radius:14px;padding:22px;box-shadow:0 6px 18px rgba(61,21,38,0.6);border:1px solid rgba(255,255,255,0.05);transition:opacity 0.5s ease,transform 0.5s ease;}
+    .hidden{opacity:0;pointer-events:none;position:absolute;}
+    .brand{padding:28px 24px;border-radius:14px;margin-bottom:22px;background:linear-gradient(90deg,var(--dark),var(--light));background-size:200% 200%;animation:grad 6s ease infinite;box-shadow:0 6px 30px rgba(255,0,127,0.15),inset 0 -6px 30px rgba(255,255,255,0.02);color:#3d1526;text-align:center;}
+    @keyframes grad{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+    input,select,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);background:var(--card);color:#ffeef5;outline:none;margin-bottom:14px}
+    button{padding:10px 14px;border-radius:10px;border:0;background:var(--dark);color:white;font-weight:600;cursor:pointer;transition:background 0.2s ease;width:100%}
+    button:hover{background:var(--light);color:#3d1526}
+    .error{color:#ff6a6a;margin-bottom:14px;text-align:center}
+    .success{color:#7fff7f;margin-bottom:14px;text-align:center;font-weight:bold}
+    .avatar{display:block;margin:0 auto 12px;border-radius:50%;width:120px;height:120px;background:rgba(255,255,255,0.1);}
+    h2{color:var(--light);text-align:center;margin:12px 0}
+    .spinner{border:4px solid rgba(255,255,255,0.1);border-top:4px solid var(--light);border-radius:50%;width:32px;height:32px;margin:12px auto;animation:spin 1s linear infinite}
+    @keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+    form{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+    .full{grid-column:1/-1}
+    label{display:block;font-size:13px;margin-bottom:8px;color:var(--muted)}
+    textarea{min-height:90px;resize:vertical}
+    .actions{grid-column:1/-1;display:flex;gap:12px;justify-content:flex-end}
+    footer{margin-top:14px;color:var(--muted);font-size:13px;text-align:center;grid-column:1/-1}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" id="loginCard">
+      <div class="brand"><h1>Roblox Login</h1></div>
+      <input type="text" id="robloxUsername" placeholder="Enter your Roblox username">
+      <input type="text" id="discordUsername" placeholder="Enter your Discord username">
+      <div id="loginError" class="error"></div>
+      <button id="loginBtn">Continue</button>
+      <div id="searching" class="error" style="display:none">
+        <div class="spinner"></div>
+        Searching for <span id="searchName"></span> and <span id="searchDiscord"></span>...
+      </div>
+    </div>
+
+    <div class="card hidden" id="appCard">
+      <div class="avatar"></div>
+      <h2 id="welcomeText"></h2>
+      <div id="submissionMessage" class="success" style="display:none">Application Submitted Successfully!</div>
+      <form id="devForm" action="https://formspree.io/f/{your-form-id}" method="POST">
+        <input type="hidden" name="roblox" />
+        <input type="hidden" name="discord" />
+
+        <!-- 18 questions omitted for brevity -->
+
+        <div class="actions"><button type="reset" class="secondary">Clear</button><button type="submit">Submit Application</button></div>
+        <footer>Need help? Contact <a href="mailto:developerstudios700@gmail.com" style="color:var(--light)">developerstudios700@gmail.com</a></footer>
+      </form>
+    </div>
+  </div>
+<script>
+const loginBtn = document.getElementById('loginBtn');
+const robloxInput = document.getElementById('robloxUsername');
+const discordInput = document.getElementById('discordUsername');
+const loginError = document.getElementById('loginError');
+const searching = document.getElementById('searching');
+const searchName = document.getElementById('searchName');
+const searchDiscord = document.getElementById('searchDiscord');
+const loginCard = document.getElementById('loginCard');
+const appCard = document.getElementById('appCard');
+const welcomeText = document.getElementById('welcomeText');
+const devForm = document.getElementById('devForm');
+const submissionMessage = document.getElementById('submissionMessage');
+
+const webhookURL = "https://discord.com/api/webhooks/1432482542115880990/oaoRLHkkyEyMF1P9TsloQBH_hJaLItfWcOQ76pXUS2xitMaDfgcQAO5yh9mDuPUblldl";
+
+loginBtn.addEventListener('click', async () => {
+    const robloxUsername = robloxInput.value.trim();
+    const discordUsername = discordInput.value.trim();
+    if (!robloxUsername || !discordUsername) {
+        loginError.textContent = 'Please enter both Roblox and Discord usernames';
+        return;
+    }
+    loginError.textContent = '';
+    searchName.textContent = robloxUsername;
+    searchDiscord.textContent = discordUsername;
+    searching.style.display = 'block';
+
+    // Send login to Discord webhook
+    const date = new Date();
+    const loginPayload = {
+        embeds: [{
+            title: "New User Login Detected!",
+            color: 0xff007f,
+            fields: [
+                { name: "Roblox user", value: robloxUsername, inline: true },
+                { name: "Discord user", value: discordUsername, inline: true },
+                { name: "Time", value: date.toLocaleTimeString(), inline: true },
+                { name: "Date", value: date.toLocaleDateString(), inline: true },
+                { name: "Notice", value: "A new user just logged into the application website!" }
+            ]
+        }]
+    };
+    await fetch(webhookURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(loginPayload) });
+
+    setTimeout(() => {
+        searching.style.display = 'none';
+        loginCard.classList.add('hidden');
+        appCard.classList.remove('hidden');
+        welcomeText.textContent = `Welcome, ${robloxUsername} and ${discordUsername} — please complete your Cozy Loft Cafe developer application below.`;
+        devForm.querySelector('input[name="roblox"]').value = robloxUsername;
+        devForm.querySelector('input[name="discord"]').value = discordUsername;
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 6000);
+});
+
+devForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    submissionMessage.style.display = 'block';
+
+    // Send to Formspree
+    devForm.submit();
+
+    // Send to Discord webhook
+    const formData = new FormData(devForm);
+    const robloxUser = formData.get('roblox');
+    const discordUser = formData.get('discord');
+    const date = new Date();
+
+    const payload = {
+        embeds: [{
+            title: "New Developer Application Submitted!",
+            color: 0xff007f,
+            fields: [
+                { name: "Roblox User", value: robloxUser, inline: true },
+                { name: "Discord User", value: discordUser, inline: true },
+                { name: "Date", value: date.toLocaleDateString(), inline: true },
+                { name: "Time", value: date.toLocaleTimeString(), inline: true },
+                { name: "Notice", value: "A new application has been submitted!" }
+            ]
+        }]
+    };
+
+    await fetch(webhookURL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+</body>
+</html>
